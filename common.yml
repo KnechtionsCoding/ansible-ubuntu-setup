@@ -1,0 +1,106 @@
+---
+- hosts: all
+  vars:
+  remote_user: root
+  tasks:
+    # Apt Actions
+    - name: Upgrade all packages to the latest version
+      apt:
+        name: "*"
+        state: latest
+
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+
+    - name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    #Firewall Rules
+    - name: Allow OpenSSH
+      ufw:
+        rule: limit
+        name: OpenSSH
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    #Ensuring Fail2Ban is configured
+    - name: Add Fail2Ban
+      apt:
+        pkg:
+        - fail2ban
+
+    - name: Copy Fail2Ban config
+      copy:
+        src: files/jail.local
+        dest: /etc/fail2ban/jail.local
+        owner: root
+        group: root
+        mode: '0644'
+      register: fail2ban_reload
+
+    - name: Ensuring Fail2Ban is running
+      systemd:
+        state: started
+        enabled: yes
+        name: fail2ban
+    
+    - name: If Fail2ban config is updated restart fail2ban
+      systemd:
+        state: restart
+        name: fail2ban
+      when: fail2ban_reload.changed
+
+    #Adding hknecht user
+    - name: Add the user 'hknecht' with a bash shell, appending the group 'admins' to the user's groups
+      user:
+        name: hknecht
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+    
+    #Configuring public key to hknecht user
+    - name: Copy file with owner and permissions
+      copy:
+        src: files/authorized_keys
+        dest: /home/hknecht
+        owner: hknecht
+        group: hknecht
+        mode: '0644'
+    
+
+
+    #Configuring SSH
+    - name: Copy file with owner and permissions
+      copy:
+        src: files/sshd_config
+        dest: /etc/ssh/sshd_config
+        owner: root
+        group: root
+        mode: '0644'
+      register: sshd_reload
+    
+    - name: If ssh config is updated restart ssh
+      systemd:
+        state: restarted
+        name: sshd
+      when: sshd_reload.changed
+
+- hosts: minecraft
+  remote_user: root
+  tasks:
+    - name: Allow Minecraft
+      ufw:
+        rule: allow
+        port: '25565'
+      register: firewall_change
+
+    - name: restart UFW
+      ufw:
+        state: enabled
+      when: firewall_change.changed
+    ## Todo: Add Minecraft user, download java, configure service file, configure service, and download jar
