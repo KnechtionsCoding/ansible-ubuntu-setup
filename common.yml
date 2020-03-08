@@ -103,4 +103,50 @@
       ufw:
         state: enabled
       when: firewall_change.changed
-    ## Todo: Add Minecraft user, download java, configure service file, configure service, and download jar
+    
+    - name: Add the user 'minecraft' with a bash shell, appending the group 'admins' to the user's groups
+      user:
+        name: minecraft
+        shell: /bin/bash
+        group: minecraft
+        home: /opt/minecraft
+
+    - name: Add Java 1.8
+      apt:
+        name: "openjdk-8-jdk"
+        state: latest
+    
+    - name: Add service file for minecraft
+      copy:
+        src: files/minecraft@.service
+        dest: /etc/systemd/system/minecraft@.service
+        owner: root
+        group: root
+        mode: '0644'
+      register: systemd_reload
+    
+    - name: If minecraft service has changed use a daemon_reload
+      systemd: 
+        daemon_reload: yes
+      when: systemd_reload.changed
+
+    - name: Download Minecraft Spigot Server
+      get_url:
+        url: https://cdn.getbukkit.org/spigot/spigot-1.8.8-R0.1-SNAPSHOT-latest.jar
+        dest: /opt/minecraft/minecraft_server.jar
+        mode: '0664'
+        onwer: minecraft
+        group: minecraft
+    
+    - name: Allow Limited Sudo for Minecraft Admins to Restart Servers
+      copy: 
+        src: files/minecraft_admins_sudoers
+        dest: /etc/sudoers.d/minecraft_admins_sudoers
+        owner: root
+        group: root
+        mode: '0440'
+    
+    - name: Ensure group "minecraftadmins" exists
+      group:
+        name: minecraftadmins
+        state: present

@@ -1,0 +1,1 @@
+%minecraftadmins ALL=NOPASSWD: /bin/systemctl start minecraft@*,/bin/systemctl status minecraft@*,/bin/systemctl stop minecraft@*,/bin/chown

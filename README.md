@@ -10,3 +10,8 @@ Sets up:
 For Minecraft servers:
 
 * Allows port 25565
+* Installs OpenJDK 8
+* Downloads 1.8.8 Minecraft Spigot Server
+* Configures user for minecraft to run as
+* Configures sudoers minecraftadmins group to allow limited commands such to upload files for plugins, restart servers
+* 
