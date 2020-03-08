@@ -1,5 +1,6 @@
 # ansible-ubuntu-setup
-Setting up an Ubuntu Server with basic hardening
+
+## Setting up an Ubuntu Server with basic hardening
 
 Sets up: 
 * fail2ban
@@ -7,7 +8,7 @@ Sets up:
 * updates packages
 
 
-For Minecraft servers:
+## For Minecraft servers:
 
 * Allows port 25565
 * Installs OpenJDK 8
