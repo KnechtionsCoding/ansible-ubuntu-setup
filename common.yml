@@ -4,6 +4,11 @@
   remote_user: root
   tasks:
     # Apt Actions
+    - name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
     - name: Upgrade all packages to the latest version
       apt:
         name: "*"
@@ -12,11 +17,6 @@
     - name: Update all packages to the latest version
       apt:
         upgrade: dist
-
-    - name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
 
     #Firewall Rules
     - name: Allow OpenSSH
@@ -135,7 +135,7 @@
         url: https://cdn.getbukkit.org/spigot/spigot-1.8.8-R0.1-SNAPSHOT-latest.jar
         dest: /opt/minecraft/minecraft_server.jar
         mode: '0664'
-        onwer: minecraft
+        owner: minecraft
         group: minecraft
     
     - name: Allow Limited Sudo for Minecraft Admins to Restart Servers
